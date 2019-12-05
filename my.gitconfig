@@ -43,15 +43,15 @@
 [log]
 	date = short
 [alias]
-  a = config --get-regexp alias
-  ec = config --global -e
+  	a = config --get-regexp alias
+  	ec = config --global -e
 	st = status -sb
 	cm = !git add -A && git commit -m
 	am = commit --amend --no-edit
 	cl = clean -fdx
-	co = "!f(){ git checkout \"$@\" && git submodule update --init --recursive; }; f"
+	co = "!f(){ git checkout \"$@\" && git smu; }; f"
 	cob = checkout -b 
-	cor = "!f(){ git checkout -b \"$@\" \"origin/$@\"&& git submodule update --init --recursive; }; f"
+	cor = "!f(){ git checkout -b \"$@\" \"origin/$@\"&& git smu; }; f"
 	br = branch
 	bl = branch -a --list
 	bd = branch -d
@@ -63,20 +63,34 @@
 	dt = difftool --no-prompt --gui
 	df = diff --color-words='[^[:space:]]'
 	sh = show --color-words='[^[:space:]]'	
-	up = !git pull --rebase --prune --autostash $@ && git submodule update --init --recursive
+	up = !git pull --rebase --prune --autostash $@ && git smu && git bclean
 	rb = "!f() { git fetch && git rebase ${1-master}; }; f"
+	ui = !gitextensions
+	comu = !git co master && git up
+	smu = submodule update --init --recursive
+	smur = submodule update --init --recursive --remote
+	smb = !git submodule foreach -q --recursive 'git checkout $(git config -f $toplevel/.gitmodules submodule.$name.branch || echo master)'
 	graph = log --graph --oneline --decorate=short --branches='*'
-  new = !git init && git commit -m “root” --allow-empty
+  	new = !git init && git commit -m "root" --allow-empty
 	save = !git add -A && git commit -m 'SAVEPOINT'
 	undo = reset HEAD~1 --mixed
+	wipe = !git add -A && git commit -qm 'WIPE SAVEPOINT' && git reset HEAD~1 --hard
+	rename = branch -m
 	flush = !git clean -dxf && git remote prune origin && git gc
 	bclean = "!f() { git branch --merged ${1-master} | grep -v master | xargs -r git branch -d; }; f"
 	bdone = "!f() { git checkout ${1-master} && git up && git bclean ${1-master}; }; f"
 	bcomp = "!f() { git diff ${2-master} ${1}; }; f"
 	serve = !git daemon --reuseaddr --verbose --base-path=. --export-all ./.git
-	publish = "!git push -u origin $(git bn)"
-	fpush = "push --force-with-lease"
+	devops = "!f() { REPO_URL=$(git config remote.origin.url); explorer ${REPO_URL%%.git}; }; f"
+	publish = !git push -u origin $(git bn)
+	fpush = push --force-with-lease
 [format]
 	pretty = '%C(yellow)%h%Creset %C(magenta)%cd%Creset %d %s'
 [push]
 	default = simple
+[pull]
+	rebase = true
+[fetch]
+	prune = true
+[rebase]
+	autoStash = true
