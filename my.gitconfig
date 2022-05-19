@@ -1,22 +1,42 @@
 [user]
 	name = Peter Coombe
 [credential]
-	helper = manager
+	helper = manager-core
+[http]
+	sslBackend = schannel
+	schannelCheckRevoke = false
 [core]
-	editor = notepad.exe
+	editor = notepad
 	whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol
 	excludesfile = ~/.gitignore-rab
 	autocrlf = true
 [diff]
 	guitool = winmerge
+	tool = vsdiffmerge
 [difftool "winmerge"]
-	path = \"C:/Program Files (x86)/WinMerge/winmergeu.exe\"
-	cmd = \"C:/Program Files (x86)/WinMerge/winmergeu.exe\" -e -u \"$LOCAL\" \"$REMOTE\"
+	path = \"C:/Program Files (x86)/WinMerge/WinMergeU.exe\"
+	cmd = \"C:/Program Files (x86)/WinMerge/WinMergeU.exe\" -e -u \"$LOCAL\" \"$REMOTE\"
 [merge]
-	tool = winmerge
+	tool = vsdiffmerge
+	guitool = vsdiffmerge
+[mergetool]
+	prompt = true
+	keepBackup = false
+	keepTemporaries = false
 [mergetool "winmerge"]
-	path = \"C:/Program Files (x86)/WinMerge/winmergeu.exe\"
-	cmd = \"C:/Program Files (x86)/WinMerge/winmergeu.exe\" -e -u -dl \"Original\" -dr \"Modified\" \"$MERGED\" \"$REMOTE\"
+	trustExitCode = true
+	path = \"C:/Program Files (x86)/WinMerge/WinMergeU.exe\"
+	cmd = \"C:/Program Files (x86)/WinMerge/WinMergeU.exe\" -u -e -dl \"Source\" -dr \"Target\" $LOCAL $REMOTE $MERGED
+[mergetool "vsdiffmerge"]
+	cmd = \"C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/vsdiffmerge.exe\" \"$REMOTE\" \"$LOCAL\" \"$BASE\" \"$MERGED\" //m
+	keepBackup = false
+	trustExitCode = true
+	path = \"C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/vsdiffmerge.exe\"
+[difftool]
+	prompt = true
+[difftool "vsdiffmerge"]
+	cmd = \"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\vsdiffmerge.exe\" \"$LOCAL\" \"$REMOTE\" //t
+	keepBackup = false
 [color]
 	branch = auto
 	diff = auto
@@ -43,43 +63,44 @@
 [log]
 	date = short
 [alias]
-  	a = config --get-regexp alias
-  	ec = config --global -e
+	a = config --get-regexp alias
+	ec = config --global -e
 	st = status -sb
 	cm = !git add -A && git commit -m
-	am = commit --amend --no-edit
+	ca = commit --amend --no-edit
 	cl = clean -fdx
 	co = "!f(){ git checkout \"$@\" && git smu; }; f"
-	cob = checkout -b 
+	cob = checkout -b
 	cor = "!f(){ git checkout -b \"$@\" \"origin/$@\"&& git smu; }; f"
 	br = branch
 	bl = branch -a --list
 	bd = branch -d
-	bn = !git rev-parse --abbrev-ref HEAD
+	bn = rev-parse --abbrev-ref HEAD
+	mn = !git remote show origin | sed -n '/HEAD branch/s/.*: //p'
 	sl = stash list
 	sa = stash apply
 	ss = stash save
 	sc = stash clear
 	dt = difftool --no-prompt --gui
 	df = diff --color-words='[^[:space:]]'
-	sh = show --color-words='[^[:space:]]'	
+	sh = show --color-words='[^[:space:]]'
 	up = !git pull --rebase --prune --autostash $@ && git smu && git bclean
-	rb = "!f() { git fetch && git rebase ${1-master}; }; f"
-	ui = !gitextensions
-	comu = !git co master && git up
+	rb = "!f() { git fetch && git rebase ${1-$(git mn)}; }; f"
+	ui = "!f() { gitextensions browse . &}; f"
+	comu = !git co $(git mn) && git up
 	smu = submodule update --init --recursive
 	smur = submodule update --init --recursive --remote
-	smb = !git submodule foreach -q --recursive 'git checkout $(git config -f $toplevel/.gitmodules submodule.$name.branch || echo master)'
+	smb = !git submodule foreach -q --recursive 'git checkout $(git config -f $toplevel/.gitmodules submodule.$name.branch || echo $(git bn))'
 	graph = log --graph --oneline --decorate=short --branches='*'
-  	new = !git init && git commit -m "root" --allow-empty
+	new = !git init && git commit -mroot--allow-empty
 	save = !git add -A && git commit -m 'SAVEPOINT'
 	undo = reset HEAD~1 --mixed
 	wipe = !git add -A && git commit -qm 'WIPE SAVEPOINT' && git reset HEAD~1 --hard
 	rename = branch -m
 	flush = !git clean -dxf && git remote prune origin && git gc
-	bclean = "!f() { git branch --merged ${1-master} | grep -v master | xargs -r git branch -d; }; f"
-	bdone = "!f() { git checkout ${1-master} && git up && git bclean ${1-master}; }; f"
-	bcomp = "!f() { git diff ${2-master} ${1}; }; f"
+	bclean = "!f() { git branch --merged ${1-$(git mn)} | grep -v $(git mn) | xargs -r git branch -d; }; f"
+	bdone = "!f() { git checkout ${1-$(git mn)} && git up && git bclean ${1-$(git mn)}; }; f"
+	bcomp = "!f() { git diff ${2-$(git mn)} ${1}; }; f"
 	serve = !git daemon --reuseaddr --verbose --base-path=. --export-all ./.git
 	devops = "!f() { REPO_URL=$(git config remote.origin.url); explorer ${REPO_URL%%.git}; }; f"
 	publish = !git push -u origin $(git bn)
