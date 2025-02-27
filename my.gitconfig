@@ -1,7 +1,8 @@
 [user]
 	name = Peter Coombe
+
 [credential]
-	helper = manager-core
+	helper = manager
 [http]
 	sslBackend = schannel
 	schannelCheckRevoke = false
@@ -13,9 +14,17 @@
 [diff]
 	guitool = winmerge
 	tool = vsdiffmerge
+	algorithm = histogram
+	colorMoved = plain
+	mnemonicPrefix = true
+[difftool]
+	prompt = true
 [difftool "winmerge"]
 	path = \"C:/Program Files (x86)/WinMerge/WinMergeU.exe\"
 	cmd = \"C:/Program Files (x86)/WinMerge/WinMergeU.exe\" -e -u \"$LOCAL\" \"$REMOTE\"
+[difftool "vsdiffmerge"]
+	cmd = \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\vsdiffmerge.exe\" \"$LOCAL\" \"$REMOTE\" //t
+	keepBackup = false
 [merge]
 	tool = vsdiffmerge
 	guitool = vsdiffmerge
@@ -28,15 +37,10 @@
 	path = \"C:/Program Files (x86)/WinMerge/WinMergeU.exe\"
 	cmd = \"C:/Program Files (x86)/WinMerge/WinMergeU.exe\" -u -e -dl \"Source\" -dr \"Target\" $LOCAL $REMOTE $MERGED
 [mergetool "vsdiffmerge"]
-	cmd = \"C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/vsdiffmerge.exe\" \"$REMOTE\" \"$LOCAL\" \"$BASE\" \"$MERGED\" //m
+	path = \"C:/Program Files/Microsoft Visual Studio/2022/Enterprise/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/vsdiffmerge.exe\"
+	cmd = \"C:/Program Files/Microsoft Visual Studio/2022/Enterprise/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/vsdiffmerge.exe\" \"$REMOTE\" \"$LOCAL\" \"$BASE\" \"$MERGED\" //m
 	keepBackup = false
 	trustExitCode = true
-	path = \"C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/vsdiffmerge.exe\"
-[difftool]
-	prompt = true
-[difftool "vsdiffmerge"]
-	cmd = \"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\vsdiffmerge.exe\" \"$LOCAL\" \"$REMOTE\" //t
-	keepBackup = false
 [color]
 	branch = auto
 	diff = auto
@@ -56,12 +60,28 @@
 	added = green
 	changed = magenta
 	untracked = cyan
+[log]
+	date = short
+[format]
+	pretty = '%C(yellow)%h%Creset %C(magenta)%cd%Creset %d %s'
+[tag]
+        sort = version:refname	
 [apply]
 	whitespace = nowarn
 [branch]
 	autosetuprebase = always
-[log]
-	date = short
+[push]
+	default = simple
+[pull]
+	rebase = true
+[fetch]
+	prune = true
+	pruneTags = true
+[rebase]
+	autoStash = true
+	autosquash = false
+	updateRefs = true
+	
 [alias]
 	a = config --get-regexp alias
 	ec = config --global -e
@@ -71,7 +91,7 @@
 	cl = clean -fdx
 	co = "!f(){ git checkout \"$@\" && git smu; }; f"
 	cob = checkout -b
-	cor = "!f(){ git checkout -b \"$@\" \"origin/$@\"&& git smu; }; f"
+	cor = "!f(){ git checkout -b \"$@\" \"origin/$@\" && git smu; }; f"
 	br = branch
 	bl = branch -a --list
 	bd = branch -d
@@ -105,13 +125,4 @@
 	devops = "!f() { REPO_URL=$(git config remote.origin.url); explorer ${REPO_URL%%.git}; }; f"
 	publish = !git push -u origin $(git bn)
 	fpush = push --force-with-lease
-[format]
-	pretty = '%C(yellow)%h%Creset %C(magenta)%cd%Creset %d %s'
-[push]
-	default = simple
-[pull]
-	rebase = true
-[fetch]
-	prune = true
-[rebase]
-	autoStash = true
+[gui]
